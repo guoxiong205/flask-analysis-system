@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>评论情感分析系统</title>
+
+    <!-- 引入字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1f2937, #111827);
+            color: #fff;
+        }
+
+        /* 顶部栏 */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .top-bar h2 {
+            font-weight: 400;
+        }
+
+        .logout {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .title p {
+            color: #9ca3af;
+        }
+
+        /* 卡片 */
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            font-weight: 400;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            border-radius: 8px;
+            border: none;
+            padding: 10px;
+            margin-bottom: 10px;
+            outline: none;
+        }
+
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        /* 图片 */
+        .charts img {
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 10px;
+        }
+
+        /* 历史记录 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: rgba(255,255,255,0.1);
+        }
+
+        tr:nth-child(even) {
+            background: rgba(255,255,255,0.05);
+        }
+
+        a.download {
+            color: #34d399;
+            text-decoration: none;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- 顶部 -->
+<div class="top-bar">
+    <h2>📊 评论情感分析系统</h2>
+    <div>
+    <a href="/recommend" style="margin-right:10px; padding:6px 12px; background:#007bff; color:white; border-radius:5px; text-decoration:none;">推荐系统</a>
+    <a href="/logout" class="logout">退出登录</a>
+</div>
+</div>
+
+
+<div class="container">
+
+    <div class="title">
+        <h1>数据智能分析平台</h1>
+        <p>支持单条分析 / 批量分析 / 可视化洞察</p>
+    </div>
+
+    <!-- 单条分析 -->
+    <div class="card">
+        <h3>单条评论分析</h3>
+        <form method="post" action="/">
+            <textarea name="comment" placeholder="请输入评论..."></textarea>
+            <button type="submit">分析</button>
+        </form>
+        {% if result %}
+<div class="card">
+    <h3>分析结果</h3>
+    <p><b>评论：</b>{{ result.comment }}</p>
+    <p><b>情感：</b>{{ result.sentiment }}</p>
+    <p><b>得分：</b>{{ result.score }}</p>
+    <p><b>维度：</b>{{ result.dimensions }}</p>
+</div>
+{% endif %}
+    </div>
+
+    <!-- 批量分析 -->
+    <div class="card">
+        <h3>批量评论分析</h3>
+        <form action="/batch" method="post" enctype="multipart/form-data">
+            <input type="file" name="file">
+            <br>
+            <button type="submit">上传并分析</button>
+        </form>
+    </div>
+
+    <!-- 可视化 -->
+    <div class="card charts">
+        <h3>数据可视化</h3>
+        <h3> 主要问题维度</h3>
+
+{% if bad_dimensions %}
+    {% for d in bad_dimensions %}
+        <p style="color:red;">❗ {{ d }}</p>
+    {% endfor %}
+{% else %}
+    <p>暂无明显问题</p>
+{% endif %}
+        <h3>推荐学习店铺</h3>
+
+{% if recommended_shops %}
+    {% for shop in recommended_shops %}
+        <div style="margin-bottom:15px;">
+            <strong>{{ shop.name }}</strong><br>
+            标签：
+            {% for t in shop.tags %}
+                {{ t }}
+            {% endfor %}
+        </div>
+    {% endfor %}
+{% else %}
+    <p>暂无推荐</p>
+{% endif %}
+
+        <p>情感分布图</p>
+        <img src="{{ url_for('static', filename='sentiment_pie_chart.png') }}">
+        <p>维度分析图</p>
+        <img src="{{ url_for('static', filename='dimension_bar_chart.png') }}">
+        <p>评论词云</p>
+        <img src="{{ url_for('static', filename='wordcloud.png') }}">
+    </div>
+
+    <!-- 历史记录 -->
+    <div class="card">
+        <h3>历史分析记录</h3>
+
+        <table>
+            <tr>
+                <th>时间</th>
+                <th>文件</th>
+                <th>操作</th>
+            </tr>
+
+            {% for item in history %}
+            <tr>
+                <td>{{ item.time }}</td>
+                <td>{{ item.file }}</td>
+                <td>
+                    <a class="download" href="/static/{{ item.file }}">下载</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>

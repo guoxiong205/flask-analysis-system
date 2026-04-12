@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>店铺推荐系统</title>
+
+<style>
+body{
+    font-family: "微软雅黑";
+    background:#f5f6fa;
+    margin:0;
+}
+
+.header{
+    background:#2f3640;
+    color:#fff;
+    padding:20px;
+    text-align:center;
+    font-size:24px;
+}
+
+.container{
+    width:1000px;
+    margin:30px auto;
+}
+
+.card{
+    background:#fff;
+    border-radius:10px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    display:flex;
+}
+
+.card img{
+    width:150px;
+    height:120px;
+    border-radius:8px;
+    margin-right:20px;
+}
+
+.info{
+    flex:1;
+}
+
+.title{
+    font-size:20px;
+    font-weight:bold;
+}
+
+.tags{
+    color:#888;
+    margin:5px 0;
+}
+
+.score{
+    color:#e84118;
+    font-size:18px;
+}
+
+.comment{
+    background:#f1f2f6;
+    padding:8px;
+    margin-top:5px;
+    border-radius:5px;
+    font-size:14px;
+}
+
+.back{
+    text-align:center;
+    margin-top:20px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">🍽️ 店铺智能推荐系统</div>
+
+<div class="container">
+
+{% for shop in shops %}
+<div class="card">
+
+    <img src="{{ url_for('static', filename='shops/' + shop.image) }}">
+
+    <div class="info">
+
+        <div class="title">{{ shop.name }}</div>
+
+        <div class="tags">
+            {% for t in shop.tags %}
+                #{{ t }}
+            {% endfor %}
+        </div>
+
+        <div class="score">
+            ⭐评分：{{ shop.score }} | 👍好评率：{{ shop.rate }}
+        </div>
+
+        <div>
+            {% for c in shop.comments %}
+            <div class="comment">💬 {{ c }}</div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+</div>
+{% endfor %}
+
+<div class="back">
+    <a href="/">← 返回首页</a>
+</div>
+
+</div>
+
+</body>
+</html>
