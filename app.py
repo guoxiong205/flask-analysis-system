@@ -127,62 +127,68 @@ def logout():
     session.pop('user', None)
     return redirect('/login')
 
+import os
+import json
+from flask import request, render_template
+from datetime import datetime
+
 @app.route('/batch', methods=['POST'])
 def batch():
     """批量评论分析"""
+
     file = request.files.get('file')
-    if file:
-        file_path = os.path.join('uploads', file.filename)
-        file.save(file_path)
 
-        #analysis_results = batch_analyze(file_path)
-        from datetime import datetime
+    if not file:
+        return "No file uploaded", 400
 
-        filename = f"batch_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-        result_file = f"static/{filename}"
-        from datetime import datetime  # 可以提前到文件最上面（推荐）
+    # 创建上传目录
+    UPLOAD_FOLDER = "uploads"
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-        filename = f"batch_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-        result_file = f"static/{filename}"
+    # 保存文件
+    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(file_path)
 
-        analysis_results, bad_dimensions = batch_analyze(file_path, result_file)
+    # 生成结果文件
+    filename = f"batch_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    result_file = f"static/{filename}"
 
-        print("当前文件路径:", file_path)
-        # ✅ 加在这里（紧跟下面）
-        print("本次分析结果:", analysis_results[:5])
-        print("本次问题维度:", bad_dimensions)
+    # 分析
+    analysis_results, bad_dimensions = batch_analyze(file_path, result_file)
 
-        from statistics import generate_statistics
-        generate_statistics(analysis_results)
+    # 统计
+    from statistics import generate_statistics
+    generate_statistics(analysis_results)
 
-        #return render_template('index.html')
-        save_history(filename)
-        import json
+    # 保存历史
+    save_history(filename)
 
+    # 读取历史
+    history = []
+    if os.path.exists("history.json"):
         with open("history.json", "r", encoding="utf-8") as f:
             history = json.load(f)
 
-        # ================= 推荐店铺 =================
-        with open('shops.json', 'r', encoding='utf-8') as f:
+    # 推荐店铺
+    recommended_shops = []
+    if os.path.exists("shops.json"):
+        with open("shops.json", "r", encoding="utf-8") as f:
             shops_data = json.load(f)
 
-        recommended_shops = []
-
         for shop in shops_data:
-            match = False
             for tag in shop['tags']:
                 if any(dim in tag for dim in bad_dimensions):
-                    match = True
+                    recommended_shops.append(shop)
                     break
-            if match:
-                recommended_shops.append(shop)
-        # ==========================================
 
-        return render_template('index.html',
-                               result_file=filename,
-                               history=history,
-                               bad_dimensions=bad_dimensions,
-                               recommended_shops=recommended_shops)
+    # 返回页面
+    return render_template(
+        'index.html',
+        result_file=filename,
+        history=history,
+        bad_dimensions=bad_dimensions,
+        recommended_shops=recommended_shops
+    )
 
     return "No file uploaded", 400
 
