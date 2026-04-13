@@ -66,6 +66,9 @@ def generate_statistics(analysis_results):
         dimension_counts.values()
     )
 
+    # ⭐⭐⭐ 关键：让X轴中文生效
+    plt.xticks(fontproperties=my_font)
+
     plt.title('评价维度分布', fontproperties=my_font)
     plt.xlabel('维度', fontproperties=my_font)
     plt.ylabel('数量', fontproperties=my_font)
