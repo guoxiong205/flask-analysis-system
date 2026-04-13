@@ -71,6 +71,18 @@ def analyze_shops(data):
     return result
 # =================================================
 
+import os
+import json
+from flask import Flask, render_template, request
+from datetime import datetime
+
+# ⭐ 确保 history.json 文件存在，如果不存在则创建
+history_file = "history.json"
+if not os.path.exists(history_file):
+    with open(history_file, "w", encoding="utf-8") as f:
+        # 初始化空列表
+        json.dump([], f)
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     from flask import session, redirect
@@ -220,7 +232,7 @@ def batch_analyze(file_path, result_file):
         # 找出出现最多的维度（认为是问题点）
         bad_dimensions = sorted(dimension_count, key=dimension_count.get, reverse=True)[:2]
         # =================================================
-    #result_file = 'static/batch_analysis_results.csv'
+
     with open(result_file, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow(['Comment', 'Sentiment', 'Score', 'Dimensions'])
@@ -230,10 +242,6 @@ def batch_analyze(file_path, result_file):
         comments = [row[0] for row in analysis_results]
         generate_wordcloud(comments)
 
-    # Generate Statistics
-   # generate_statistics(analysis_results)
-
-    #return result_file这是修改前的代码
     return analysis_results, bad_dimensions#这是修改后的代码
 
 # ================== 推荐系统页面 ==================

@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 
 # ⭐ 使用本地字体文件（关键修复点）
-#font_path = "simhei.ttf"
-#my_font = fm.FontProperties(fname=font_path)
 import os
 
 font_path = os.path.join(os.path.dirname(__file__), "simhei.ttf")
@@ -13,7 +11,28 @@ my_font = fm.FontProperties(fname=font_path)
 
 plt.rcParams['axes.unicode_minus'] = False  # 负号显示
 
+# =========================
+# 🎯 防崩：默认图表（必须加）
+# =========================
+def ensure_default_images():
+    os.makedirs("static", exist_ok=True)
+
+    if not os.path.exists('static/sentiment_pie_chart.png'):
+        plt.figure()
+        plt.pie([1], labels=['暂无数据'], autopct='%1.1f%%')
+        plt.title('情感分布', fontproperties=my_font)
+        plt.savefig('static/sentiment_pie_chart.png')
+        plt.close()
+
+    if not os.path.exists('static/dimension_bar_chart.png'):
+        plt.figure()
+        plt.bar(['暂无数据'], [1])
+        plt.title('评价维度分布', fontproperties=my_font)
+        plt.savefig('static/dimension_bar_chart.png')
+        plt.close()
 def generate_statistics(analysis_results):
+    # ⭐⭐⭐ 在这里调用（关键！！）
+    ensure_default_images()
 
     # ===== 情感统计 =====
     sentiment_counts = {'正面': 0, '负面': 0, '中性': 0}
