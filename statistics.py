@@ -4,7 +4,11 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 
 # ⭐ 使用本地字体文件（关键修复点）
-font_path = "simhei.ttf"
+#font_path = "simhei.ttf"
+#my_font = fm.FontProperties(fname=font_path)
+import os
+
+font_path = os.path.join(os.path.dirname(__file__), "simhei.ttf")
 my_font = fm.FontProperties(fname=font_path)
 
 plt.rcParams['axes.unicode_minus'] = False  # 负号显示
@@ -44,7 +48,8 @@ def generate_statistics(analysis_results):
         sentiment_counts.values(),
         labels=sentiment_counts.keys(),
         autopct='%1.1f%%',
-        startangle=90
+        startangle=90,
+        textprops={'fontproperties': my_font}  # ⭐关键！
     )
 
     plt.title('情感分布', fontproperties=my_font)
