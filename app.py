@@ -10,6 +10,12 @@ from statistics import generate_statistics
 import json
 from datetime import datetime
 
+def load_history():
+    if os.path.exists("history.json"):
+        with open("history.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
 def save_history(filename):
     record = {
         "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -21,7 +27,6 @@ def save_history(filename):
             data = json.load(f)
     except:
         data = []
-
     data.append(record)
 
     with open("history.json", "w", encoding="utf-8") as f:
@@ -93,11 +98,7 @@ def index():
     import json
 
     # 读取历史
-    try:
-        with open("history.json", "r", encoding="utf-8") as f:
-            history = json.load(f)
-    except:
-        history = []
+    history = load_history()
 
     # ⭐ 处理单条评论分析
     if request.method == 'POST':
@@ -166,7 +167,7 @@ def batch():
     result_file = f"static/{filename}"
 
     # 分析
-    analysis_results, bad_dimensions = batch_analyze(file_path, result_file)
+    analysis_results, bad_dimensions, sentiment_count = batch_analyze(file_path, result_file)
 
     # 统计
     from statistics import generate_statistics
@@ -176,10 +177,7 @@ def batch():
     save_history(filename)
 
     # 读取历史
-    history = []
-    if os.path.exists("history.json"):
-        with open("history.json", "r", encoding="utf-8") as f:
-            history = json.load(f)
+    history = load_history()
 
     # 推荐店铺
     recommended_shops = []
@@ -199,7 +197,9 @@ def batch():
         result_file=filename,
         history=history,
         bad_dimensions=bad_dimensions,
-        recommended_shops=recommended_shops
+        recommended_shops=recommended_shops,
+        sentiment_count=sentiment_count,
+        total=len(analysis_results)
     )
 
     return "No file uploaded", 400
@@ -242,7 +242,19 @@ def batch_analyze(file_path, result_file):
         comments = [row[0] for row in analysis_results]
         generate_wordcloud(comments)
 
-    return analysis_results, bad_dimensions#这是修改后的代码
+    # ================== 情感统计 ==================
+    sentiment_count = {
+        "正面": 0,
+        "中性": 0,
+        "负面": 0
+    }
+
+    for row in analysis_results:
+        sentiment_count[row[1]] += 1
+    # ===========================================
+
+    return analysis_results, bad_dimensions, sentiment_count
+
 
 # ================== 推荐系统页面 ==================
 @app.route('/recommend')
